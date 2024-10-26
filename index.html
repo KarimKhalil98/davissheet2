@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Work Log</title>
+</head>
+<body>
+    <h1>Employee Work Log</h1>
+
+    <!-- Form to submit work log -->
+    <div id="employee-form">
+        <form id="work-log-form" onsubmit="submitWorkLog(event)">
+            <input type="text" id="name" placeholder="Name" required />
+            <input type="text" id="ticket" placeholder="Ticket #" required />
+            <input type="text" id="location" placeholder="Location" required />
+            <input type="text" id="work_order" placeholder="Work Order #" required />
+            <button type="submit">Submit Work Log</button>
+        </form>
+    </div>
+
+    <!-- Search for logs (Admin View) -->
+    <div id="admin-form" style="margin-top: 20px;">
+        <input type="text" id="searchName" placeholder="Search by Employee Name" />
+        <button onclick="searchLogs()">Search Logs</button>
+        <div id="logResults"></div>
+    </div>
+
+    <script>
+        // Submit work log function
+        function submitWorkLog(event) {
+            event.preventDefault();
+            let name = document.getElementById("name").value;
+            let ticket = document.getElementById("ticket").value;
+            let location = document.getElementById("location").value;
+            let workOrder = document.getElementById("work_order").value;
+
+            fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, ticket, location, work_order: workOrder })
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error("Error:", error));
+        }
+
+        // Search logs function
+        function searchLogs() {
+            let name = document.getElementById("searchName").value;
+
+            fetch('/get_logs')
+            .then(response => response.json())
+            .then(data => {
+                let logs = data.filter(log => log.name.toLowerCase() === name.toLowerCase());
+                let logResults = document.getElementById("logResults");
+                logResults.innerHTML = logs.map(log => `
+                    <p>${log.name} | Ticket: ${log.ticket} | Location: ${log.location} | Work Order: ${log.work_order}</p>
+                `).join('');
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>
